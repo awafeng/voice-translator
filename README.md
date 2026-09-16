@@ -37,7 +37,17 @@
 
 ## 快速开始
 
-### 0. 前置要求
+### 方式一：下载免安装版（推荐普通用户）
+
+无需 Python、无需装依赖，模型全带（约 340MB）：
+
+👉 **[下载 VoiceTranslator-v1.0-win64.zip（Releases 页面）](https://github.com/awafeng/voice-translator/releases/latest)**
+
+运行环境：Windows 10/11 64 位，任意 CPU（不需要显卡），详见 Release 说明。
+
+### 方式二：从源码运行（开发者）
+
+#### 0. 前置要求
 
 - Windows 10/11（需 x64）
 - Python 3.10–3.12
