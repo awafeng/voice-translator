@@ -1,0 +1,30 @@
+# ===== Python =====
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+
+# ===== 虚拟环境 =====
+venv/
+.convert_env/
+
+# ===== 构建产物 =====
+build/
+dist/
+*.spec.bak
+
+# ===== 模型（体积大，走 scripts/下载模型.bat 一键下载）=====
+models/
+third_party/tiny_tts_text/cmudict.rep
+third_party/tiny_tts_text/cmudict_cache.pickle
+
+# ===== 运行期产物 =====
+test_output/
+selftest_result.txt
+*.log
+
+# ===== IDE / 系统 =====
+.idea/
+.vscode/
+Thumbs.db
+Desktop.ini
