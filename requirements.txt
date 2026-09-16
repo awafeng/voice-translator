@@ -1,4 +1,4 @@
-# 运行依赖（Python 3.10–3.12, Windows x64）
+# 运行依赖（Python 3.12, Windows x64）
 # 安装：venv\Scripts\pip install -r requirements.txt -i https://mirrors.aliyun.com/pypi/simple/
 
 # 音频

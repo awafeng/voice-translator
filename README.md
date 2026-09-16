@@ -50,13 +50,13 @@
 #### 0. 前置要求
 
 - Windows 10/11（需 x64）
-- Python 3.10–3.12
+- Python **3.12**（项目在此版本开发验证；其他版本未测试）
 - [VB-CABLE 虚拟声卡](https://vb-audio.com/Cable/)（免费，装完重启一次系统）
 
 ### 1. 安装
 
 ```bat
-git clone https://github.com/<你的用户名>/voice-translator.git
+git clone https://github.com/awafeng/voice-translator.git
 cd voice-translator
 
 :: 建虚拟环境 + 装依赖
