@@ -121,3 +121,9 @@ voice-translator/
 各组件的署名与许可全文见 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)。
 
 > 本软件永久免费，不接受任何形式的收费分发。
+
+## 致谢
+
+- 本项目由 **awafeng** 发起并主导开发
+- 感谢 **GLM** 与 **Claude Code** 参与部分代码与文档的开发工作
+- 感谢 Moonshine AI、Helsinki-NLP、TinyTTS、Silero 的开源模型（见上方许可证表格）
