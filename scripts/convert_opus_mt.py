@@ -9,7 +9,13 @@ if sys.platform == "win32":
     sys.stdout.reconfigure(encoding="utf-8")
 
 DL = Path(__file__).resolve().parent.parent / ".convert_env" / "dl"
-OUT = Path(__file__).resolve().parent.parent / "models" / "opus-mt-zh-en-ct2-int8"
+# 输出目录按方向：--en2zh 转英译中模型，默认转中译英
+if "--en2zh" in sys.argv:
+    OUT = (Path(__file__).resolve().parent.parent / "models"
+           / "opus-mt-en-zh-ct2-int8")
+else:
+    OUT = (Path(__file__).resolve().parent.parent / "models"
+           / "opus-mt-zh-en-ct2-int8")
 
 import ctranslate2
 import transformers

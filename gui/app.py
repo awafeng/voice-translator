@@ -30,11 +30,23 @@ from tts import create_default_tts
 import diagnostics
 import crashlog
 
+# 翻译方向：zh2en=中译英（默认）| en2zh=英译中。命令行 --en2zh 切换；
+# 打包版按 exe 名自动识别（VoiceTranslator-EN2ZH.exe）。
+def _detect_direction() -> str:
+    exe = Path(sys.executable).name.upper()
+    if "EN2ZH" in exe:
+        return "en2zh"
+    return "en2zh" if "--en2zh" in sys.argv else "zh2en"
+
+
+DIRECTION = _detect_direction()
+
 
 class App(tk.Tk):
     def __init__(self):
         super().__init__()
-        self.title("实时中译英语音翻译")
+        self.title("实时中译英语音翻译" if DIRECTION == "zh2en"
+                   else "实时英译中语音翻译")
         self.geometry("560x660")
         self.minsize(500, 600)
 
@@ -371,9 +383,9 @@ class App(tk.Tk):
         def worker():
             try:
                 pipe = TranslationPipeline(
-                    stt=create_default_stt(),
-                    translator=create_default_translator(),
-                    tts=create_default_tts(),
+                    stt=create_default_stt(DIRECTION),
+                    translator=create_default_translator(DIRECTION),
+                    tts=create_default_tts(DIRECTION),
                     debug=True, debug_print=lambda m: None,
                 )
                 load_t = pipe.load_all()
@@ -700,16 +712,21 @@ def main():
         try:
             import numpy as np
             P("[selftest] 加载 STT / 翻译 / TTS / VAD ……")
-            stt = create_default_stt(); stt.load()
-            translator = create_default_translator(); translator.load()
-            tts = create_default_tts(); tts.load()
+            stt = create_default_stt(DIRECTION); stt.load()
+            translator = create_default_translator(DIRECTION); translator.load()
+            tts = create_default_tts(DIRECTION); tts.load()
             from vad import create_default_vad
             vad = create_default_vad(); vad.load()
             P("[selftest] 三模型+VAD 加载成功")
-            zh = "今天天气真好"
-            en = translator.translate(zh)
-            P(f"[selftest] 翻译: {zh} -> {en}")
-            audio, sr = tts.synthesize(en)
+            if DIRECTION == "zh2en":
+                src = "今天天气真好"
+                out_text = translator.translate(src)
+                P(f"[selftest] 翻译: {src} -> {out_text}")
+            else:
+                src = "The weather is really nice today."
+                out_text = translator.translate(src)
+                P(f"[selftest] 翻译: {src} -> {out_text}")
+            audio, sr = tts.synthesize(out_text)
             P(f"[selftest] TTS 合成: {len(audio)/sr:.2f}s @ {sr}Hz")
             frame = np.zeros(512, dtype=np.float32)
             p = vad.is_speech(frame)

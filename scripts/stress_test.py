@@ -29,14 +29,16 @@ SR = 16000
 OUT_DIR = PROJ / "test_output"
 
 
-def synth_zh_sentence(text, out_path):
-    """用 Windows Huihui 合成"模拟用户说的话"。"""
+def synth_sentence(text, out_path, direction="zh2en"):
+    """用 Windows SAPI 合成"模拟用户说的话"（中=Huihui / 英=David）。"""
+    voice = ("Microsoft Huihui Desktop" if direction == "zh2en"
+             else "Microsoft David Desktop")
     ps = subprocess.run(
         ["powershell", "-NoProfile", "-Command",
          "Add-Type -AssemblyName System.Speech;"
          f"$s = New-Object System.Speech.Synthesis.SpeechSynthesizer;"
          f"$s.SetOutputToWaveFile('{out_path}');"
-         "$s.SelectVoice('Microsoft Huihui Desktop');"
+         f"$s.SelectVoice('{voice}');"
          "$s.Rate = -1;"
          f"$s.Speak('{text}');"
          "$s.Dispose()"],
@@ -75,15 +77,29 @@ SENTENCES = [
 ]
 
 
-def prepare_inputs(n):
+SENTENCES_EN = [
+    "Hello everyone, let us play the game together.",
+    "The enemy is camping near the door, be careful.",
+    "I will be back in five minutes.",
+    "My internet is lagging, how about yours?",
+    "Wait a moment, let me drink some water.",
+    "This boss is too hard, let us try another way.",
+    "Turn left, turn left, someone is at the gate.",
+    "I am logging off, see you tomorrow.",
+]
+
+
+def prepare_inputs(n, direction="zh2en"):
     """准备 n 段不同的输入音频（循环使用语料，变化足够）。"""
     OUT_DIR.mkdir(exist_ok=True)
+    sentences = SENTENCES if direction == "zh2en" else SENTENCES_EN
+    tag = "zh" if direction == "zh2en" else "en"
     clips = []
     for i in range(n):
-        text = SENTENCES[i % len(SENTENCES)]
-        wav = OUT_DIR / f"_stress_in_{i % len(SENTENCES)}.wav"
+        text = sentences[i % len(sentences)]
+        wav = OUT_DIR / f"_stress_in_{tag}_{i % len(sentences)}.wav"
         if not wav.exists():
-            if not synth_zh_sentence(text, wav):
+            if not synth_sentence(text, wav, direction):
                 raise RuntimeError("模拟语音合成失败")
         a, sr = load_wav_mono(wav)
         # 每轮加轻微随机偏移，避免识别端缓存任何东西
@@ -93,24 +109,24 @@ def prepare_inputs(n):
     return clips
 
 
-def run_inproc(rounds, threads):
+def run_inproc(rounds, threads, direction="zh2en"):
     """源码环境压测：加载三引擎后循环 跑 rounds 轮流水线。"""
     from audio.pipeline import TranslationPipeline
     from stt import create_default_stt
     from translation import create_default_translator
     from tts import create_default_tts
 
-    print("加载三模型……")
+    print(f"加载三模型……（方向 {direction}）")
     pipe = TranslationPipeline(
-        stt=create_default_stt(),
-        translator=create_default_translator(),
-        tts=create_default_tts(),
+        stt=create_default_stt(direction),
+        translator=create_default_translator(direction),
+        tts=create_default_tts(direction),
     )
     t0 = time.time()
     pipe.load_all()
     print(f"加载完成 {time.time()-t0:.1f}s，开始压测 {rounds} 轮 x {threads} 线程")
 
-    clips = prepare_inputs(min(len(SENTENCES), max(3, rounds)))
+    clips = prepare_inputs(min(8, max(3, rounds)), direction)
 
     ok_cnt = err_cnt = 0
     t0 = time.time()
@@ -170,12 +186,14 @@ def main():
     ap.add_argument("--rounds", type=int, default=30)
     ap.add_argument("--threads", type=int, default=1)
     ap.add_argument("--exe", type=str, default=None)
+    ap.add_argument("--direction", type=str, default="zh2en",
+                    choices=["zh2en", "en2zh"])
     args = ap.parse_args()
 
     if args.exe:
         code = run_exe(args.exe, args.rounds)
     else:
-        code = run_inproc(args.rounds, args.threads)
+        code = run_inproc(args.rounds, args.threads, args.direction)
     sys.exit(code)
 
 
